@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FC, useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LayoutManager } from './LayoutManager';
 
 export const VirtualTableView: FC<{
@@ -15,32 +15,52 @@ export const VirtualTableView: FC<{
     }, [layoutManager]);
 
     const viewportRef = useRef<HTMLDivElement | null>(null);
-    useLayoutEffect(() => {
+    const notifyViewPortSize = useCallback(() => {
         const viewport = viewportRef.current;
         if (viewport === null) return;
         layoutManager.setViewportSize(viewport.clientWidth, viewport.clientHeight);
     }, [layoutManager]);
-
-    const scrollerRef = useRef<HTMLDivElement | null>(null);
+    useLayoutEffect(notifyViewPortSize, [notifyViewPortSize]);
+    useEffect(() => {
+        window.addEventListener('resize', notifyViewPortSize);
+        return () => window.removeEventListener('resize', notifyViewPortSize);
+    }, [notifyViewPortSize]);
     const onScroll = useCallback(() => {
-        const scroller = scrollerRef.current;
-        if (scroller === null) return;
-        layoutManager.setScrollPosition(scroller.scrollLeft, scroller.scrollTop);
+        const viewport = viewportRef.current;
+        if (viewport === null) return;
+        layoutManager.setScrollPosition(viewport.scrollLeft, viewport.scrollTop);
     }, [layoutManager]);
 
     return (
         <div
             ref={viewportRef}
             style={{
-                position: 'fixed',
-                inset: 0,
+                position: 'relative',
+                border: '1px solid #000',
+                margin: '10vh 10vw',
+                height: '80vh',
+                width: '80vw',
+                overflow: 'auto',
+                boxSizing: 'border-box',
             }}
+            onScroll={onScroll}
         >
             <div
                 style={{
                     position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: layout.scrollWidth,
+                    height: layout.scrollHeight,
+                }}
+            />
+            <div
+                style={{
+                    position: 'sticky',
                     inset: 0,
                     overflow: 'hidden',
+                    width: '100%',
+                    height: '100%',
                 }}
             >
                 {layout.items.map(({ top, left, width, height, itemKey, viewKey }) => {
@@ -77,25 +97,6 @@ export const VirtualTableView: FC<{
                         );
                     }
                 })}
-            </div>
-            <div
-                ref={scrollerRef}
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    overflow: 'auto',
-                }}
-                onScroll={onScroll}
-            >
-                <div
-                    style={{
-                        position: 'relative',
-                        width: layout.scrollWidth,
-                        height: layout.scrollHeight,
-                    }}
-                >
-                    &nbsp;
-                </div>
             </div>
         </div>
     );
