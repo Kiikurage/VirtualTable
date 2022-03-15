@@ -13,6 +13,7 @@ export class ListViewLayoutManager implements LayoutManager {
     private viewportWidth = 0;
     private viewportHeight = 0;
     private itemLayouts: ItemLayout[] = [];
+    private numViews = 0;
 
     constructor(itemKeys: string[]) {
         this.itemKeys = itemKeys;
@@ -61,17 +62,28 @@ export class ListViewLayoutManager implements LayoutManager {
         const indexTo = binarySearch(this.itemTops, visibleAreaBottom);
 
         this.itemLayouts = [];
-        const numViews = Math.ceil(this.viewportHeight / ITEM_HEIGHT) + 10;
+        this.numViews = Math.max(this.numViews, indexTo - indexFrom + 1);
 
-        for (let i = indexFrom; i <= indexTo; i++) {
-            this.itemLayouts.push({
-                viewKey: `${i % numViews}`,
-                itemKey: this.itemKeys[i],
-                top: this.itemTops[i] - this.scrollTop,
-                height: ITEM_HEIGHT,
-                left: 0,
-                width: this.viewportWidth,
-            });
+        for (let i = indexFrom; i < indexFrom + this.numViews; i++) {
+            if (i <= indexTo) {
+                this.itemLayouts.push({
+                    viewKey: `${i % this.numViews}`,
+                    itemKey: this.itemKeys[i],
+                    top: this.itemTops[i] - this.scrollTop,
+                    height: ITEM_HEIGHT,
+                    left: 0,
+                    width: this.viewportWidth,
+                });
+            } else {
+                this.itemLayouts.push({
+                    viewKey: `${i % this.numViews}`,
+                    itemKey: '',
+                    top: -1,
+                    height: -1,
+                    left: 0,
+                    width: 0,
+                });
+            }
         }
 
         this.onChange.fire();

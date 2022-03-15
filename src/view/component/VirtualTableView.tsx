@@ -43,21 +43,40 @@ export const VirtualTableView: FC<{
                     overflow: 'hidden',
                 }}
             >
-                {layout.items.map(({ top, left, width, height, itemKey, viewKey }) => (
-                    <div
-                        key={viewKey}
-                        style={{
-                            position: 'absolute',
-                            top,
-                            left,
-                            width,
-                            height,
-                            background: parseInt(itemKey) % 2 === 1 ? '#f0f0f0' : '#fff',
-                        }}
-                    >
-                        Item={itemKey} DOM={viewKey}
-                    </div>
-                ))}
+                {layout.items.map(({ top, left, width, height, itemKey, viewKey }) => {
+                    if (itemKey === '') {
+                        return (
+                            <div
+                                key={viewKey}
+                                style={{
+                                    position: 'absolute',
+                                    visibility: 'hidden',
+                                    top,
+                                    left,
+                                    width,
+                                    height,
+                                    background: parseInt(itemKey) % 2 === 1 ? '#f0f0f0' : '#ffffff',
+                                }}
+                            />
+                        );
+                    } else {
+                        return (
+                            <div
+                                key={viewKey}
+                                style={{
+                                    position: 'absolute',
+                                    top,
+                                    left,
+                                    width,
+                                    height,
+                                    background: parseInt(itemKey) % 2 === 1 ? '#f0f0f0' : '#ffffff',
+                                }}
+                            >
+                                Item={itemKey} DOM={viewKey}
+                            </div>
+                        );
+                    }
+                })}
             </div>
             <div
                 ref={scrollerRef}
