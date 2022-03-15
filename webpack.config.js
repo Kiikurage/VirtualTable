@@ -9,7 +9,7 @@ module.exports = {
         main: path.resolve(__dirname, './src/index.tsx'),
     },
     output: {
-        publicPath: '/',
+        publicPath: '/VirtualTable',
         path: path.resolve(__dirname, './build'),
         filename: '[name]-[fullhash:6].js',
     },
